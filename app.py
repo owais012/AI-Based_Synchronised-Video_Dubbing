@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_file
 from werkzeug.utils import secure_filename
-from model.dubbing_model import dub_audio
+from model.model import dub_audio
 import os
 
 app = Flask(__name__)
