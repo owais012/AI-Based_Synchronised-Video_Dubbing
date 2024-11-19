@@ -1,24 +1,32 @@
 import os
 import yt_dlp
 from moviepy.editor import VideoFileClip
-from googletrans import Translator
 from transformers import pipeline, AutoModelForSeq2SeqLM, BitsAndBytesConfig, AutoTokenizer
 from gtts import gTTS
 from IPython.display import Audio, display
 from jiwer import wer
 import sacrebleu
 import torch
-from IndicTransToolkit import IndicTransToolkit
+from IndicTransToolkit.IndicTransToolkit.processor import IndicProcessor
 
 BATCH_SIZE = 4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 quantization = None
-translator = Translator()
 
-def download_youtube_video(youtube_url, output_path="output"):
+def download_youtube_video(youtube_url, output_path="input"):
+    # Create input folder if it doesn't exist
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    # Get the next available audio filename in input folder (audio1.wav, audio2.wav, etc.)
+    audio_files = [f for f in os.listdir(output_path) if f.endswith('.wav')]
+    next_audio_number = len(audio_files) + 1
+    audio_filename = f"audio{next_audio_number}"
+    audio_file_path = os.path.join(output_path, audio_filename)
+
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+        'outtmpl': audio_file_path,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'wav',
@@ -30,25 +38,12 @@ def download_youtube_video(youtube_url, output_path="output"):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(youtube_url, download=True)
         audio_file = ydl.prepare_filename(info_dict).replace('.webm', '.wav').replace('.m4a', '.wav')
-
     return audio_file
-
-def translate_text_google(text, src_lang, dest_lang):
-    translated = translator.translate(text, src=src_lang, dest=dest_lang)
-    return translated.text
 
 def get_asr_output(audio_file):
     whisper = pipeline("automatic-speech-recognition", model="openai/whisper-medium", device=DEVICE)
-    asr_output = whisper(audio_file, return_timestamps=True)  # Add return_timestamps=True here
+    asr_output = whisper(audio_file, return_timestamps=True)
     return asr_output['text']
-
-def show_translation_google(asr_output, source_lang, target_lang):
-    if source_lang != target_lang:
-        translated_text = translate_text_google(asr_output, src_lang=source_lang, dest_lang=target_lang)
-        print(f"Translated to {target_lang}: {translated_text}")
-    else:
-        translated_text = asr_output
-    return translated_text
 
 def initialize_model_and_tokenizer(ckpt_dir, quantization):
     if quantization == "4-bit":
@@ -120,25 +115,20 @@ def batch_translate(input_sentences, src_lang, tgt_lang, model, tokenizer, ip):
 
     return translations
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     # Download the video and extract audio
-    audio_file = download_youtube_video('https://www.youtube.com/watch?v=XALBGkjkUPQ', output_path='output')
-
+    audio_file = download_youtube_video('https://www.youtube.com/watch?v=1aA1WGON49E', output_path='input')
+    audio_file = audio_file + '.wav'
+    print(audio_file)
     # Get ASR output
     asr_text = get_asr_output(audio_file)
     print(asr_text)
-    translated_text_hi_google = show_translation_google(asr_text, 'en', 'hi')
-
-    # Text-to-speech for Google-translated text
-    tts = gTTS(translated_text_hi_google, lang='hi')
-    tts.save("outputhi.mp3")
-    display(Audio("outputhi.mp3"))
 
     # Initialize IndicTrans model and translate ASR output
     en_indic_ckpt_dir = "ai4bharat/indictrans2-en-indic-1B"
     en_indic_tokenizer, en_indic_model = initialize_model_and_tokenizer(en_indic_ckpt_dir, quantization)
 
-    ip = IndicTransToolkit(inference=True)
+    ip = IndicProcessor(inference=True)
     en_sents = [asr_text]
     src_lang, tgt_lang = "eng_Latn", "hin_Deva"
     hi_translations = batch_translate(en_sents, src_lang, tgt_lang, en_indic_model, en_indic_tokenizer, ip)
@@ -147,28 +137,20 @@ if __name__ == "__main__":
         print(f"{src_lang}: {input_sentence}")
         print(f"{tgt_lang}: {translation}")
 
-    # Save IndicTrans translation to audio
+    # Save IndicTrans translation to audio in the output folder
+    if not os.path.exists("output"):
+        os.makedirs("output")
+        
+    # Get the next available number for output audio file
+    output_files = [f for f in os.listdir("output") if f.endswith('.mp3')]
+    next_output_number = len(output_files) + 1
+    output_filename = f"audio{next_output_number}.mp3"
+    output_file_path = os.path.join("output", output_filename)
+
     result = ' '.join(hi_translations)
     tts = gTTS(result, lang='hi')
-    tts.save("outputhi2.mp3")
-    display(Audio("outputhi2.mp3"))
+    tts.save(output_file_path)
+    display(Audio(output_file_path))
 
     # Free the GPU memory
     del en_indic_tokenizer, en_indic_model
-
-    # Google Translate text
-    translated_text_hi_google = show_translation_google(asr_text, 'en', 'hi')
-
-    # Text-to-speech for Google-translated text
-    tts = gTTS(translated_text_hi_google, lang='hi')
-    tts.save("outputhi.mp3")
-    display(Audio("outputhi.mp3"))
-
-    # Initialize IndicTrans model and translate ASR output
-    en_indic_ckpt_dir = "ai4bharat/indictrans2-en-indic-1B"
-    en_indic_tokenizer, en_indic_model = initialize_model_and_tokenizer(en_indic_ckpt_dir, quantization)
-
-    ip = IndicTransToolkit(inference=True)
-    en_sents = [asr_text]
-    src_lang, tgt_lang = "eng_Latn", "hin_Deva"
-    hi_translations = batch_translate(en_sents, src_lang, tgt_lang, en_indic_model, en_indic_tokenizer, ip)
