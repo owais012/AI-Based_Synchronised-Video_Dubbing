@@ -115,9 +115,9 @@ def batch_translate(input_sentences, src_lang, tgt_lang, model, tokenizer, ip):
 
     return translations
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     # Download the video and extract audio
-    audio_file = download_youtube_video('https://www.youtube.com/watch?v=1aA1WGON49E', output_path='input')
+    audio_file = download_youtube_video('https://www.youtube.com/watch?v=1aA1WGON49E', output_path='AI-Based_Synchronised-Video_Dubbing/model/input')
     audio_file = audio_file + '.wav'
     print(audio_file)
     # Get ASR output
@@ -138,14 +138,14 @@ if _name_ == "_main_":
         print(f"{tgt_lang}: {translation}")
 
     # Save IndicTrans translation to audio in the output folder
-    if not os.path.exists("output"):
-        os.makedirs("output")
+    if not os.path.exists("AI-Based_Synchronised-Video_Dubbing/model/output"):
+        os.makedirs("AI-Based_Synchronised-Video_Dubbing/model/output")
         
     # Get the next available number for output audio file
-    output_files = [f for f in os.listdir("output") if f.endswith('.mp3')]
+    output_files = [f for f in os.listdir("AI-Based_Synchronised-Video_Dubbing/model/output") if f.endswith('.mp3')]
     next_output_number = len(output_files) + 1
     output_filename = f"audio{next_output_number}.mp3"
-    output_file_path = os.path.join("output", output_filename)
+    output_file_path = os.path.join("AI-Based_Synchronised-Video_Dubbing/model/output", output_filename)
 
     result = ' '.join(hi_translations)
     tts = gTTS(result, lang='hi')
