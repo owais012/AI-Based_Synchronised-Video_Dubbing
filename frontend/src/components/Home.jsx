@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"; // Import the Link component
 import { useState } from "react";
 import { MdOutlineDriveFolderUpload } from "react-icons/md";
 import { FaUpload, FaLanguage, FaVideo } from "react-icons/fa";
@@ -55,7 +56,6 @@ function Hero() {
       alert("Please enter a URL and select a language.");
     }
   };
-
 
   // Update video ID and validate URL
   const handleUrlChange = (e) => {
@@ -188,33 +188,37 @@ function Hero() {
           <div className="feature_box bg-gray-800 p-10 rounded-3xl text-center">
             <h4 className="font-bold text-xl lg:text-2xl mb-6">Multi-Language Support</h4>
             <p className="text-lg">
-              Our platform supports multiple languages, making it easier to localize your content for different regions.
+              Choose from a wide range of languages for dubbing, making your content accessible worldwide.
             </p>
           </div>
           <div className="feature_box bg-gray-800 p-10 rounded-3xl text-center">
-            <h4 className="font-bold text-xl lg:text-2xl mb-6">Easy-to-Use Interface</h4>
+            <h4 className="font-bold text-xl lg:text-2xl mb-6">Fast and Efficient</h4>
             <p className="text-lg">
-              With a simple and intuitive interface, you can easily upload, translate, and dub your videos in just a few clicks.
+              Our platform delivers results quickly, allowing you to get your dubbed video in no time.
             </p>
           </div>
         </div>
       </div>
-
-      {/* Call to Action Section */}
-      <div className="cta_section w-full py-20 px-6 lg:px-[12%]">
-        <div className="cta_box bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-16 rounded-3xl text-center max-w-4xl mx-auto">
-          <h3 className="[font-family:'Lexend','Helvetica'] font-bold text-[2.5rem] lg:text-[3rem] mb-6">
-            Ready to Get Started?
-          </h3>
-          <p className="text-lg lg:text-xl mb-10">
-            Sign up now and experience the best dubbing platform with a free trial. No credit card required!
-          </p>
-          <button className="px-10 py-5 bg-white text-black text-lg font-bold rounded-full">
-            Try Free
-          </button>
-        </div>
+      
+  {/* Get Started CTA Section */}
+  <div className="cta_section w-full py-20 px-6 lg:px-[12%]">
+  <div className="cta_box bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-16 rounded-3xl text-center max-w-4xl mx-auto">
+    <h3 className="[font-family:'Lexend','Helvetica'] font-bold text-[2.5rem] lg:text-[3rem] mb-6">
+      Ready to Get Started?
+    </h3>
+    <p className="text-lg lg:text-xl mb-10">
+      Sign up now and experience the best dubbing platform with a free trial. No credit card required!
+      </p>
+        <Link
+          to="/tryme"
+          className="px-10 py-5 text-xl font-semibold text-indigo-500 border-2 border-indigo-500 rounded-full transition duration-300 hover:bg-indigo-500 hover:text-white"
+        >
+          Try It Now
+        </Link>
       </div>
-    </div>
+      </div>
+      </div>
+  
   );
 }
 
