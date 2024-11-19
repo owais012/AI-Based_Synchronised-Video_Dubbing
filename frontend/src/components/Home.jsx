@@ -9,24 +9,53 @@ function Hero() {
   const [videoId, setVideoId] = useState("");
   const [error, setError] = useState(""); // Error state
 
-  // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (url && language) {
-      alert("Form submitted!");
-      // Here, you can handle the submission logic (e.g., call an API or redirect to another page)
+      try {
+        const response = await fetch("http://localhost:6000/dub-video", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            audio_file: url,     // Pass the audio or video file URL
+            src_lang: "eng_Latn", // Source language
+            tgt_lang: language,  // Target language
+          }),
+        });
+
+        if (response.ok) {
+          const blob = await response.blob(); // Get video file as a Blob
+          const videoUrl = URL.createObjectURL(blob);
+
+          // Create a download link for the video
+          const link = document.createElement("a");
+          link.href = videoUrl;
+          link.download = "dubbed_video.mp4";
+          link.textContent = "Download Dubbed Video";
+          document.body.appendChild(link); // Append the link to the body
+          link.click(); // Simulate click to start download
+
+          // Optionally, preview the video in a player
+          const videoElement = document.getElementById("videoPreview");
+          if (videoElement) {
+            videoElement.src = videoUrl;
+          }
+
+          alert("Dubbed video generated successfully!");
+        } else {
+          const error = await response.json();
+          alert(`Error: ${error.error}`);
+        }
+      } catch (err) {
+        console.error("Error submitting form:", err);
+        alert("An error occurred. Please try again.");
+      }
     } else {
       alert("Please enter a URL and select a language.");
     }
   };
 
-  // Extract video ID from URL and validate
-  const extractVideoId = (url) => {
-    const videoIdMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    if (videoIdMatch && videoIdMatch[1]) {
-      return videoIdMatch[1];
-    }
-    return null; // Return null if no valid video ID is found
-  };
 
   // Update video ID and validate URL
   const handleUrlChange = (e) => {
