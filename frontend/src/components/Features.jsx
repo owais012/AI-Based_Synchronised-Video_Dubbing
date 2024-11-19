@@ -1,28 +1,48 @@
-import React from 'react';
+import React from "react";
+import { FaLanguage } from "react-icons/fa";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 
 function Features() {
+  const navigate = useNavigate(); // Hook for programmatically navigating
+
   const languages = [
-    "Hindi", "Marathi", "Punjabi", "Urdu", 
-    "Gujarati", "Marwari", "Kannada", "Konkani", 
-    "Maithili", "Malayalam", "Manipuri", "Oriya", 
-    "Tamil", "Telugu", "Santali", "Sindhi"
+    { name: "Hindi", icon: <FaLanguage className="text-pink-500 text-3xl" /> },
+    { name: "Marathi", icon: <FaLanguage className="text-blue-500 text-3xl" /> },
+    { name: "Punjabi", icon: <FaLanguage className="text-green-500 text-3xl" /> },
+    { name: "Urdu", icon: <FaLanguage className="text-yellow-500 text-3xl" /> },
+    { name: "Gujarati", icon: <FaLanguage className="text-red-500 text-3xl" /> },
   ];
 
+  const handleTryIt = (language) => {
+    // Navigate to the homepage with the selected language as a query parameter
+    navigate(`/home?language=${language}`);
+  };
+
   return (
-    <div className="w-full min-h-screen py-20 bg-black">
-      {/* Heading */}
-      <h1 className="text-center text-[3rem] font-serif text-gray-100 mb-16">
+    <div className="w-full min-h-screen bg-black text-gray-100 flex flex-col items-center mt-16">
+      <h1 className="text-center text-[3rem] font-serif mb-16">
         Languages You Can Work With
       </h1>
-      
-      {/* Language Boxes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-10">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-screen-xl px-4">
         {languages.map((language, index) => (
-          <div 
-            key={index} 
-            className="flex justify-center items-center h-40 bg-[#1c1c1c] text-gray-100 text-lg font-semibold rounded-2xl border-4 border-blue-500 border-opacity-30 backdrop-blur-md shadow-md hover:shadow-lg transition-shadow duration-300"
+          <div
+            key={index}
+            className="flex flex-col items-center justify-between bg-[#1c1c1c] h-60 rounded-2xl p-6 border border-blue-500 border-opacity-30 shadow-lg hover:shadow-2xl hover:bg-gradient-to-r hover:from-blue-800 hover:to-blue-500 transition-all duration-300"
           >
-            {language}
+            <div className="flex flex-col items-center">
+              <div className="mb-4">{language.icon}</div>
+              <h2 className="text-xl lg:text-2xl font-semibold mb-2">{language.name}</h2>
+              <p className="text-sm lg:text-md text-gray-300 text-center">
+                Translate and dub your videos into {language.name}.
+              </p>
+            </div>
+            <button
+              className="px-6 py-2 bg-blue-500 text-black font-bold rounded-full hover:bg-blue-600 transition-colors"
+              onClick={() => handleTryIt(language.name)} // Pass the selected language to the handler
+            >
+              Try It
+            </button>
           </div>
         ))}
       </div>
@@ -31,4 +51,3 @@ function Features() {
 }
 
 export default Features;
-
