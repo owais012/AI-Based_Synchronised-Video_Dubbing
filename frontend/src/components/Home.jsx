@@ -1,14 +1,25 @@
-import { Link } from "react-router-dom"; // Import the Link component
-import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { MdOutlineDriveFolderUpload } from "react-icons/md";
 import { FaUpload, FaLanguage, FaVideo } from "react-icons/fa";
+import queryString from "query-string"; // Install using `npm install query-string`
 
 function Hero() {
-  // State for URL, language, videoId, and error message
   const [url, setUrl] = useState("");
-  const [language, setLanguage] = useState("");
   const [videoId, setVideoId] = useState("");
-  const [error, setError] = useState(""); // Error state
+  const [error, setError] = useState("");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const language = queryParams.get("language");
+
+
+  // Extract language from query params
+  useEffect(() => {
+    const { lang } = queryString.parse(location.search);
+    if (lang) {
+      setLanguage(lang);
+    }
+  }, [location.search]);
 
   const handleSubmit = async () => {
     if (url && language) {
@@ -19,25 +30,22 @@ function Hero() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            audio_file: url,     // Pass the audio or video file URL
-            src_lang: "eng_Latn", // Source language
-            tgt_lang: language,  // Target language
+            audio_file: url,
+            src_lang: "eng_Latn",
+            tgt_lang: language,
           }),
         });
 
         if (response.ok) {
-          const blob = await response.blob(); // Get video file as a Blob
+          const blob = await response.blob();
           const videoUrl = URL.createObjectURL(blob);
 
-          // Create a download link for the video
           const link = document.createElement("a");
           link.href = videoUrl;
           link.download = "dubbed_video.mp4";
-          link.textContent = "Download Dubbed Video";
-          document.body.appendChild(link); // Append the link to the body
-          link.click(); // Simulate click to start download
+          document.body.appendChild(link);
+          link.click();
 
-          // Optionally, preview the video in a player
           const videoElement = document.getElementById("videoPreview");
           if (videoElement) {
             videoElement.src = videoUrl;
@@ -57,21 +65,21 @@ function Hero() {
     }
   };
 
-  // Update video ID and validate URL
   const handleUrlChange = (e) => {
     const videoUrl = e.target.value;
     setUrl(videoUrl);
     const id = extractVideoId(videoUrl);
     if (id) {
-      setVideoId(id); // Set the extracted video ID
-      setError(""); // Clear error if URL is valid
+      setVideoId(id);
+      setError("");
     } else {
-      setVideoId(""); // Clear video ID if URL is invalid
-      setError("Please enter a valid YouTube URL."); // Set error message
+      setVideoId("");
+      setError("Please enter a valid YouTube URL.");
     }
   };
 
   return (
+    
     <div className="w-screen min-h-screen bg-black text-white overflow-x-hidden">
       {/* Hero Section */}
       <div className="hero_text w-full py-14 px-6 lg:px-[12%]">
@@ -91,7 +99,7 @@ function Hero() {
                   placeholder="Enter Your Url Here"
                   type="text"
                   value={url}
-                  onChange={handleUrlChange} // Update URL state and extract video ID
+                  onChange={handleUrlChange}
                 />
                 <button className="bg-white p-4 rounded-2xl absolute right-3 lg:right-4">
                   <MdOutlineDriveFolderUpload size={24} />
@@ -100,7 +108,7 @@ function Hero() {
               <select
                 className="w-full lg:w-[28%] p-4 text-lg rounded-2xl text-black"
                 value={language}
-                onChange={(e) => setLanguage(e.target.value)} // Update language state
+                onChange={(e) => setLanguage(e.target.value)}
               >
                 <option value="" hidden>
                   Select Language
@@ -112,17 +120,14 @@ function Hero() {
               </select>
             </div>
 
-            {/* Display error message */}
             {error && <p className="text-red-500 text-center">{error}</p>}
 
-            {/* Video Box */}
             <div className="w-full mt-6 p-4 border-2 border-gray-700 rounded-2xl">
               <h3 className="text-center text-xl text-white mb-4">Video Preview</h3>
-              {/* Video Section */}
               {videoId && !error ? (
                 <iframe
                   className="w-full h-[28rem] md:h-[35rem] rounded-2xl"
-                  src={`https://www.youtube.com/embed/${videoId}`} // Embed video dynamically
+                  src={`https://www.youtube.com/embed/${videoId}`}
                   title="YouTube video player"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -141,8 +146,8 @@ function Hero() {
             <div className="step mb-8 flex items-center gap-4">
               <FaUpload size={40} className="text-indigo-500" />
               <div className="text-left text-white">
-                <h4 className="font-bold text-lg lg:text-xl mb-1">1. Upload the Video</h4>
-                <p className="text-md lg:text-lg">Choose and upload your video file.</p>
+                <h4 className="font-bold text-lg lg:text-xl mb-1">1. Paste Video Link</h4>
+                <p className="text-md lg:text-lg">Paste your youtube video link.</p>
               </div>
             </div>
             <div className="step mb-8 flex items-center gap-4">
@@ -163,7 +168,6 @@ function Hero() {
         </div>
       </div>
 
-      {/* Submit Button */}
       <div className="w-full text-center mt-10">
         <button
           onClick={handleSubmit}
@@ -172,7 +176,7 @@ function Hero() {
           Submit
         </button>
       </div>
-
+ 
       {/* Feature Section */}
       <div className="features_section w-full py-20 px-6 lg:px-[12%]">
         <h3 className="[font-family:'Lexend','Helvetica'] font-bold text-[2.5rem] lg:text-[3rem] text-center mb-10">
@@ -223,3 +227,4 @@ function Hero() {
 }
 
 export default Hero;
+

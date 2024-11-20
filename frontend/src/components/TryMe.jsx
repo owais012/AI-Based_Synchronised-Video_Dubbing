@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 function TryMe() {
-  const [feedback, setFeedback] = useState('');
+  const location = useLocation();
+  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const language = queryParams.get("language");
+    if (language) {
+      setSelectedLanguage(language);
+    }
+  }, [location.search]);
 
   const handleFeedbackSubmit = (e) => {
     e.preventDefault();
-    if (feedback.trim() !== '') {
+    if (feedback.trim() !== "") {
       setFeedbackSubmitted(true);
-      setFeedback('');
+      setFeedback("");
       setTimeout(() => setFeedbackSubmitted(false), 3000); // Reset message after 3 seconds
     }
   };
@@ -16,7 +27,7 @@ function TryMe() {
   return (
     <div className="w-full py-16 px-8 bg-gradient-to-b from-black via-gray-800 to-black text-white">
       <h2 className="text-5xl font-extrabold mb-6 text-center text-white tracking-tight drop-shadow-lg">
-        Try Our Amazing Features!
+        Try Our Amazing Features in {selectedLanguage || "Your Language"}!
       </h2>
       <p className="text-xl text-gray-300 mb-12 text-center max-w-2xl mx-auto">
         Upload your files, select options, and experience the magic of our powerful tool with ease.
@@ -40,6 +51,7 @@ function TryMe() {
             <label className="block mb-6 text-sm font-medium text-gray-300">
               Select an Option:
               <select className="block w-full mt-2 p-3 bg-gray-900 text-gray-300 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-400">
+                <option value={selectedLanguage}>{selectedLanguage}</option>
                 <option value="Gujarati">Gujarati</option>
                 <option value="Hindi">Hindi</option>
                 <option value="Marathi">Marathi</option>

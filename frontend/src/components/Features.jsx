@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaLanguage } from "react-icons/fa";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
 
 function Features() {
-  const navigate = useNavigate(); // Hook for programmatically navigating
+  const navigate = useNavigate();
+  const [selectedLanguage, setSelectedLanguage] = useState("");
 
   const languages = [
     { name: "Hindi", icon: <FaLanguage className="text-pink-500 text-3xl" /> },
@@ -14,8 +15,8 @@ function Features() {
   ];
 
   const handleTryIt = (language) => {
-    // Navigate to the homepage with the selected language as a query parameter
-    navigate(`/home?language=${language}`);
+    setSelectedLanguage(language);
+    navigate(`/tryme?language=${encodeURIComponent(language)}`); // Navigate to Try Me page with the selected language
   };
 
   return (
@@ -39,7 +40,7 @@ function Features() {
             </div>
             <button
               className="px-6 py-2 bg-blue-500 text-black font-bold rounded-full hover:bg-blue-600 transition-colors"
-              onClick={() => handleTryIt(language.name)} // Pass the selected language to the handler
+              onClick={() => handleTryIt(language.name)}
             >
               Try It
             </button>
