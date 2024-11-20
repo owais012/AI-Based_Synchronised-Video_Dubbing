@@ -9,7 +9,7 @@ async function handleUserSignup(req, res) {
     email,
     password,
   });
-  return res.redirect("/");
+  res.json({ status : "login Successful"}); // here , we might have to see, if gets any error
 }
 
 async function handleUserLogin(req, res) {

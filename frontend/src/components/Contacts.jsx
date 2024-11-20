@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 function Contacts() {
   const [formData, setFormData] = useState({
@@ -12,11 +13,19 @@ function Contacts() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
-    console.log('Form data submitted:', formData);
-  };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      // Handle form submission logic here
+      try {
+        const response = await axios.post('http://localhost:5000/api/contact', formData);
+        console.log('Form submitted successfully:', response.data);
+        alert('Message sent successfully!');
+    } catch (error) {
+        console.error('Error submitting the form:', error);
+        alert('Failed to send message.');
+    }
+      console.log('Form data submitted:', formData);
+    };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-black">

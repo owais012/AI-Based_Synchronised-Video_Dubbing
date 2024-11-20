@@ -18,7 +18,8 @@
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
     "module": "^1.1.0",
-    "mongoose": "^8.8.1",
+    "mongoose": "^8.8.2",
+    "mysql2": "^3.11.4",
     "path": "^0.12.7",
     "uuid": "^11.0.3"
   }
