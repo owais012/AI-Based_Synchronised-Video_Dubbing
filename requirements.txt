@@ -1,0 +1,12 @@
+yt_dlp
+moviepy
+transformers
+gTTS
+IPython
+jiwer
+sacrebleu
+torch
+entencepiece
+accelerate>=0.26.0
+git clone https://github.com/AI4Bharat/IndicTrans2.git
+git clone https://github.com/VarunGumma/IndicTransToolkit.git
