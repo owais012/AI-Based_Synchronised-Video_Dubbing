@@ -4,13 +4,27 @@ const { setUser } = require("../services/auth");
 
 async function handleUserSignup(req, res) {
   const { name, email, password } = req.body;
-  await User.create({
-    name,
-    email,
-    password,
-  });
-  res.json({ status : "login Successful"}); // here , we might have to see, if gets any error
+
+  // Check if required fields are provided
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email, and password are required.' });
+  }
+
+  try {
+    // Attempt to create a new user
+    await User.create({ name, email, password });
+    res.json({ status: "Signup successful" });
+  } catch (error) {
+    // Handle Mongoose validation errors or other errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: error.message });
+    } else {
+      console.error('Error during user signup:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
+
 
 async function handleUserLogin(req, res) {
     const { email, password } = req.body;

@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 
 function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false); // Toggle between Sign-In and Sign-Up
-  const [name, setName] = useState(''); // Initialize with an empty string
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState('');
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,9 +48,8 @@ function Auth() {
         console.error('Error during sign-up:', error);
         alert('Sign-Up Failed: Network error');
       }
-
     } else {
-      // For Sign-In logic
+      // Sign-In logic
       const payload = {
         email,
         password,
@@ -66,24 +67,22 @@ function Auth() {
         if (response.ok) {
           const data = await response.json();
           alert('Sign-In Successful');
-          console.log('Login Response:', data);
-          // Redirect to home page
-          window.location.href = '/'; // Change this to your home page route
+          console.log('Sign-In Response:', data);
+          window.location.href = '/'; // Redirect to the home page
         } else {
           const errorData = await response.json();
           alert(`Sign-In Failed: ${errorData.message || 'Unknown Error'}`);
         }
       } catch (error) {
-        console.error('Error during login:', error);
+        console.error('Error during sign-in:', error);
         alert('Sign-In Failed: Network error');
       }
     }
   };
 
-
   const handleGoogleSignIn = (credentialResponse) => {
-    console.log('Google Sign-In Success:', credentialResponse);
-    // You can send credentialResponse.credential to your backend for verification.
+    console.log('Google login response:', credentialResponse);
+    // You can send `credentialResponse.credential` to the backend for verification
   };
 
   return (
@@ -104,7 +103,7 @@ function Auth() {
                   Name
                 </label>
                 <input
-                  type="name"
+                  type="text"
                   id="name"
                   className="w-full p-3 rounded-lg bg-gray-800 text-gray-100 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your name"
@@ -114,10 +113,9 @@ function Auth() {
                 />
               </div>
             )}
+
             <div className="mb-4">
-              <label htmlFor="email" className="block text-gray-100 mb-2">
-                Email Address
-              </label>
+              <label htmlFor="email" className="block text-gray-100 mb-2">Email Address</label>
               <input
                 type="email"
                 id="email"
@@ -129,9 +127,7 @@ function Auth() {
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="password" className="block text-gray-100 mb-2">
-                Password
-              </label>
+              <label htmlFor="password" className="block text-gray-100 mb-2">Password</label>
               <input
                 type="password"
                 id="password"
@@ -145,12 +141,7 @@ function Auth() {
 
             {isSignUp && (
               <div className="mb-6">
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-gray-100 mb-2"
-                >
-                  Confirm Password
-                </label>
+                <label htmlFor="confirmPassword" className="block text-gray-100 mb-2">Confirm Password</label>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -175,6 +166,7 @@ function Auth() {
                 <>
                   <span>Already have an account?</span>
                   <button
+                    type="button"
                     onClick={() => setIsSignUp(false)}
                     className="text-blue-500 hover:underline"
                   >
@@ -185,6 +177,7 @@ function Auth() {
                 <>
                   <span>Don't have an account?</span>
                   <button
+                    type="button"
                     onClick={() => setIsSignUp(true)}
                     className="text-blue-500 hover:underline"
                   >
@@ -196,16 +189,26 @@ function Auth() {
           </form>
 
           {/* Google Sign-In Button */}
-          <div className="flex justify-center items-center mt-4">
+          <div className="flex justify-center items-center mt-4 w-full">
             <GoogleLogin
               onSuccess={handleGoogleSignIn}
-              onError={() => {
-                console.log('Login Failed');
-              }}
-              theme="filled_blue"
-              size="large"
-              text="continue_with"
-              shape="pill"
+              onError={() => console.log('Login Failed')}
+              cookiePolicy={'single_host_origin'}
+              render={(renderProps) => (
+                <button
+                  {...renderProps}
+                  className="w-full p-3 bg-gray-800 text-gray-100 border border-gray-700 hover:bg-gray-700 transition duration-300 rounded-lg"
+                  style={{
+                    height: '48px', // Matching the height of the input fields
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <span>Sign in with Google</span>
+                </button>
+              )}
             />
           </div>
         </div>

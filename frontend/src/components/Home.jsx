@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { MdOutlineDriveFolderUpload } from "react-icons/md";
 import { FaUpload, FaLanguage, FaVideo } from "react-icons/fa";
@@ -12,7 +12,6 @@ function Hero() {
   const queryParams = new URLSearchParams(location.search);
   const language = queryParams.get("language");
 
-
   // Extract language from query params
   useEffect(() => {
     const { lang } = queryString.parse(location.search);
@@ -20,6 +19,13 @@ function Hero() {
       setLanguage(lang);
     }
   }, [location.search]);
+
+  // Function to extract the YouTube video ID
+  const extractVideoId = (url) => {
+    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^/]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  };
 
   const handleSubmit = async () => {
     if (url && language) {
@@ -79,7 +85,6 @@ function Hero() {
   };
 
   return (
-    
     <div className="w-screen min-h-screen bg-black text-white overflow-x-hidden">
       {/* Hero Section */}
       <div className="hero_text w-full py-14 px-6 lg:px-[12%]">
@@ -176,7 +181,7 @@ function Hero() {
           Submit
         </button>
       </div>
- 
+      
       {/* Feature Section */}
       <div className="features_section w-full py-20 px-6 lg:px-[12%]">
         <h3 className="[font-family:'Lexend','Helvetica'] font-bold text-[2.5rem] lg:text-[3rem] text-center mb-10">
@@ -184,26 +189,20 @@ function Hero() {
         </h3>
         <div className="features_grid grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           <div className="feature_box bg-gray-800 p-10 rounded-3xl text-center">
-            <h4 className="font-bold text-xl lg:text-2xl mb-6">High-Quality Translations</h4>
-            <p className="text-lg">
-              We provide accurate and culturally relevant translations, ensuring your content resonates with your target audience.
-            </p>
+            <h4 className="font-bold text-xl lg:text-2xl text-white mb-4">Accurate Dubbing</h4>
+            <p className="text-white">Our AI engine ensures highly accurate dubbing in various languages.</p>
           </div>
           <div className="feature_box bg-gray-800 p-10 rounded-3xl text-center">
-            <h4 className="font-bold text-xl lg:text-2xl mb-6">Multi-Language Support</h4>
-            <p className="text-lg">
-              Choose from a wide range of languages for dubbing, making your content accessible worldwide.
-            </p>
+            <h4 className="font-bold text-xl lg:text-2xl text-white mb-4">Fast Processing</h4>
+            <p className="text-white">Get your dubbed video quickly, within minutes!</p>
           </div>
           <div className="feature_box bg-gray-800 p-10 rounded-3xl text-center">
-            <h4 className="font-bold text-xl lg:text-2xl mb-6">Fast and Efficient</h4>
-            <p className="text-lg">
-              Our platform delivers results quickly, allowing you to get your dubbed video in no time.
-            </p>
+            <h4 className="font-bold text-xl lg:text-2xl text-white mb-4">High-Quality Audio</h4>
+            <p className="text-white">Enjoy high-quality audio synced perfectly with your video.</p>
           </div>
         </div>
       </div>
-      
+         
   {/* Get Started CTA Section */}
   <div className="cta_section w-full py-20 px-6 lg:px-[12%]">
   <div className="cta_box bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-16 rounded-3xl text-center max-w-4xl mx-auto">
@@ -222,9 +221,7 @@ function Hero() {
       </div>
       </div>
       </div>
-  
   );
 }
 
 export default Hero;
-
