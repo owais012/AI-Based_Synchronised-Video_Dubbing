@@ -53,7 +53,7 @@ function AboutUs() {
               />
             </div>
             <h4 className="font-bold text-xl text-blue-400">Hemangini Patel</h4>
-            <p className="text-sm mt-2 font-medium text-green-400">Project Lead</p>
+            <p className="text-sm mt-2 font-medium text-green-400">ML & Frontend Specialist</p>
             <p className="text-sm mt-4 text-gray-300">
               
             As a dedicated contributor to our projects, Hemangini works tirelessly to bring our vision to life with innovation and attention to detail.            </p>
