@@ -36,9 +36,11 @@ function Hero() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            audio_file: url,
+            youtube_url: url,  // Updated parameter name
             src_lang: "eng_Latn",
             tgt_lang: language,
+            start: 1,  // New start time
+            end: 9,  
           }),
         });
 
