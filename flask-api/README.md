@@ -14,5 +14,12 @@ https://github.com/justinjohn0306/Wav2Lip/releases/download/models/mobilenet.pth
 3. Run the app.py which will launch a flask server
 
 4. Send a post request with parameters: youtubr url, src_language, target_language, start_time, end_time
+eg: {
+    "youtube_url": "https://www.youtube.com/watch?v=8bkXRWHbz6I",
+    "src_lang": "eng_Latn",
+    "tgt_lang": "hin_Deva",
+    "start": 1,
+    "end": 9
+}
 
 5. The result video will be in the results folder of wav2lip
