@@ -2,28 +2,36 @@ import os
 import yt_dlp
 from transformers import pipeline, AutoModelForSeq2SeqLM, BitsAndBytesConfig, AutoTokenizer
 from gtts import gTTS
-from IPython.display import Audio, display
 import torch
 from IndicTransToolkit.IndicTransToolkit.processor import IndicProcessor
+import ffmpeg
 
+# Constants
 BATCH_SIZE = 4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 quantization = None
 
+# Paths
+INPUT_AUDIO_PATH = "input_audio"
+INPUT_VIDEO_PATH = "input_video"
+OUTPUT_AUDIO_PATH = "output_audio"
+OUTPUT_VIDEO_PATH = "output_video"
 
-def download_youtube_video(youtube_url, output_path="AI-Based_Synchronised-Video_Dubbing/flask-api/model/input"):
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
+# Create directories if not exist
+for path in [INPUT_AUDIO_PATH, INPUT_VIDEO_PATH, OUTPUT_AUDIO_PATH, OUTPUT_VIDEO_PATH]:
+    if not os.path.exists(path):
+        os.makedirs(path)
 
-    audio_files = [f for f in os.listdir(output_path) if f.endswith('.wav')]
-    next_audio_number = len(audio_files) + 1
-    audio_filename = f"audio{next_audio_number}"
-    audio_file_path = os.path.join(output_path, audio_filename)
+
+def download_youtube_audio(youtube_url):
+    audio_filename = "audio"  # Constant filename
+    input_audio_path = os.path.join(INPUT_AUDIO_PATH, audio_filename)
+    print(input_audio_path, "hellooooo")
 
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': audio_file_path,
-        'postprocessors': [{    
+        'outtmpl': input_audio_path,  # Save in the input_audio folder
+        'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'wav',
             'preferredquality': '192',
@@ -32,9 +40,16 @@ def download_youtube_video(youtube_url, output_path="AI-Based_Synchronised-Video
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(youtube_url, download=True)
-        audio_file = ydl.prepare_filename(info_dict).replace('.webm', '.wav').replace('.m4a', '.wav')
-    return audio_file
+        ydl.download([youtube_url])
+    print(input_audio_path, "hellooooo")
+
+    audio_filename = "audio.wav"  # Constant filename
+    input_audio_path = os.path.join(INPUT_AUDIO_PATH, audio_filename)
+    print(input_audio_path, "hellooooo")
+
+    return input_audio_path  # Return the full path to the file
+
+
 
 
 def get_asr_output(audio_file):
@@ -45,26 +60,15 @@ def get_asr_output(audio_file):
 
 def initialize_model_and_tokenizer(ckpt_dir, quantization):
     if quantization == "4-bit":
-        qconfig = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
-        )
+        qconfig = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16)
     elif quantization == "8-bit":
-        qconfig = BitsAndBytesConfig(
-            load_in_8bit=True,
-            bnb_8bit_use_double_quant=True,
-            bnb_8bit_compute_dtype=torch.bfloat16,
-        )
+        qconfig = BitsAndBytesConfig(load_in_8bit=True, bnb_8bit_compute_dtype=torch.bfloat16)
     else:
         qconfig = None
 
     tokenizer = AutoTokenizer.from_pretrained(ckpt_dir, trust_remote_code=True)
     model = AutoModelForSeq2SeqLM.from_pretrained(
-        ckpt_dir,
-        trust_remote_code=True,
-        low_cpu_mem_usage=True,
-        quantization_config=qconfig,
+        ckpt_dir, trust_remote_code=True, low_cpu_mem_usage=True, quantization_config=qconfig
     )
 
     if qconfig is None:
@@ -79,72 +83,78 @@ def initialize_model_and_tokenizer(ckpt_dir, quantization):
 def batch_translate(input_sentences, src_lang, tgt_lang, model, tokenizer, ip):
     translations = []
     for i in range(0, len(input_sentences), BATCH_SIZE):
-        batch = input_sentences[i: i + BATCH_SIZE]
+        batch = input_sentences[i:i+BATCH_SIZE]
         batch = ip.preprocess_batch(batch, src_lang=src_lang, tgt_lang=tgt_lang)
 
         inputs = tokenizer(
             batch,
             truncation=True,
             padding="longest",
-            return_tensors="pt",
-            return_attention_mask=True,
+            return_tensors="pt"
         ).to(DEVICE)
 
         with torch.no_grad():
-            generated_tokens = model.generate(
-                **inputs,
-                use_cache=True,
-                min_length=0,
-                max_length=256,
-                num_beams=5,
-                num_return_sequences=1,
-            )
+            generated_tokens = model.generate(**inputs, num_beams=5, max_length=256)
 
         with tokenizer.as_target_tokenizer():
-            generated_tokens = tokenizer.batch_decode(
-                generated_tokens.detach().cpu().tolist(),
-                skip_special_tokens=True,
-                clean_up_tokenization_spaces=True,
-            )
+            generated_tokens = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
 
         translations += ip.postprocess_batch(generated_tokens, lang=tgt_lang)
-        del inputs
         torch.cuda.empty_cache()
 
     return translations
 
 
-def process_video(youtube_url, src_lang, tgt_lang):
-    # Download the video and extract audio
-    audio_file = download_youtube_video(youtube_url, output_path='AI-Based_Synchronised-Video_Dubbing/flask-api/model/input')
-    audio_file = audio_file + '.wav'
+def lipsync(input_video_path, input_audio_path):
+    if not os.path.isfile('AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/checkpoints/wav2lip_gan.pth'):
+        raise FileNotFoundError("Wav2Lip model checkpoint not found.")
+    os.system(
+        f'python AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/inference.py --checkpoint_path "AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/checkpoints/wav2lip_gan.pth" '
+        f'--face "{input_video_path}" --audio "{input_audio_path}" --nosmooth --resize_factor 1'
+    )
+    
+
+def download_and_trim_video(youtube_url, start, end):
+    trimmed_video_filename = "video.mp4"  # Constant filename
+    output_video_path = os.path.join(INPUT_VIDEO_PATH, trimmed_video_filename)
+
+    # Download video
+    os.system(f'yt-dlp -f "bestvideo[ext=mp4]" --output "youtube.mp4" {youtube_url}')
+
+    # Trim the video
+    interval = end - start
+    os.system(f'ffmpeg -y -i youtube.mp4 -ss {start} -t {interval} -async 1 {output_video_path}')
+
+    return output_video_path
+
+
+def process_video(youtube_url, src_lang, tgt_lang, start, end):
+    # Download and trim video
+    input_audio_path = download_youtube_audio(youtube_url)
+    
+
+    input_video_path = download_and_trim_video(youtube_url, start, end)
 
     # Get ASR output
-    asr_text = get_asr_output(audio_file)
+    asr_text = get_asr_output(input_audio_path)
 
-    # Initialize IndicTrans model and translate ASR output
+    # Translate ASR output
     en_indic_ckpt_dir = "ai4bharat/indictrans2-en-indic-1B"
     en_indic_tokenizer, en_indic_model = initialize_model_and_tokenizer(en_indic_ckpt_dir, quantization)
-
     ip = IndicProcessor(inference=True)
-    en_sents = [asr_text]
-    hi_translations = batch_translate(en_sents, src_lang, tgt_lang, en_indic_model, en_indic_tokenizer, ip)
+    translations = batch_translate([asr_text], src_lang, tgt_lang, en_indic_model, en_indic_tokenizer, ip)
 
-    # Save IndicTrans translation to audio in the output folder
-    output_folder = "AI-Based_Synchronised-Video_Dubbing/flask-api/model/output"
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+    # Generate translated audio
+    translated_audio_filename = f"audio_translated.mp3"
+    output_audio_path = os.path.join(OUTPUT_AUDIO_PATH, translated_audio_filename)
+    tts = gTTS(' '.join(translations), lang='hi')  # Change `lang` for other target languages
+    tts.save(output_audio_path)
+    print(input_video_path, output_audio_path)
+    # Perform lip-sync with translated audio
+    lipsync(input_video_path, output_audio_path)
 
-    # Get the next available number for output audio file
-    output_files = [f for f in os.listdir(output_folder) if f.startswith('output_audio') and f.endswith('.mp3')]
-    next_output_number = len(output_files) + 1
-    output_filename = f"output_audio{next_output_number}.mp3"
-    output_file_path = os.path.join(output_folder, output_filename)
+    # Move final lip-synced video to output directory
+    result_video_path = 'AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/results/result_voice.mp4'
+    # os.rename("AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/results/result_voice.mp4", result_video_path)
 
-    result = ' '.join(hi_translations)
-    tts = gTTS(result, lang='hi')
-    tts.save(output_file_path)
-
-    # Free the GPU memory
-    del en_indic_tokenizer, en_indic_model
-    return output_file_path
+    return result_video_path  
