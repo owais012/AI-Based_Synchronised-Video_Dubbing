@@ -92,6 +92,27 @@ function Hero() {
 
   return (
     <div className="w-screen min-h-screen bg-black text-white overflow-x-hidden">
+<div className="new_section w-full flex flex-col lg:flex-row items-center justify-center py-32 px-8 lg:px-[15%] bg-gradient-to-r from-gray-900 via-black to-gray-900">
+  <div className="w-full lg:w-1/2 flex items-center justify-center">
+    <img
+      src="/FontImage.jpg" // Replace with your image URL
+      alt="Breaking Language Barriers"
+      className="rounded-2xl shadow-xl lg:shadow-2xl"
+      style={{ width: "100%", height: "auto" }} // Increased width
+    />
+  </div>
+  <div className="w-full lg:w-1/2 text-center lg:text-left mt-16 lg:mt-0 lg:pl-16">
+    <h1 className="[font-family:'Lexend','Helvetica'] text-4xl lg:text-6xl font-extrabold mb-8 leading-tight">
+      Breaking Language Barriers with Seamless Dubbing
+    </h1>
+    <p className="text-xl lg:text-3xl text-gray-300">
+      Transforming Voices, Connecting Cultures!
+    </p>
+  </div>
+</div>
+
+
+
       {/* Hero Section */}
       <div className="hero_text w-full py-14 px-6 lg:px-[12%]">
         <div className="relative w-full my-14 text-center">
