@@ -1,8 +1,19 @@
 from flask import Flask, request, jsonify
 from model import process_video
 import traceback
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/": {"origins": "http://localhost:5173"}})
+
+@app.route('/dub-video', methods=['OPTIONS'])
+def options():
+    response = jsonify({"status": "OK"})
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    return response
+
 
 @app.route('/dub-video', methods=['POST'])
 def dub_video():
@@ -33,4 +44,4 @@ def dub_video():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=6000)
+    app.run(host='0.0.0.0', port=8000)

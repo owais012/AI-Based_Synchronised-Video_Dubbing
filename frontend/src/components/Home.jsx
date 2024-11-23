@@ -10,7 +10,8 @@ function Hero() {
   const [error, setError] = useState("");
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const language = queryParams.get("language");
+  // const language = queryParams.get("language");
+  const language = "hin_Deva"
 
   // Extract language from query params
   useEffect(() => {
@@ -28,9 +29,12 @@ function Hero() {
   };
 
   const handleSubmit = async () => {
+    
+    console.log(url + " " + language);
+
     if (url && language) {
       try {
-        const response = await fetch("http://localhost:6000/dub-video", {
+        const response = await fetch("http://localhost:8000/dub-video", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
