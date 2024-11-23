@@ -1,27 +1,25 @@
-const ContactModel = require('../models/contact_messages');
+const { v4: uuidv4 } = require("uuid");
+const contact_us = require("../models/contact_messages");
 
-// Handler for saving a contact message
-exports.saveContactMessage = (req, res) => {
+async function saveContactUsForm(req, res) {
   const { name, email, message } = req.body;
 
+  // Check if required fields are provided
   if (!name || !email || !message) {
-    return res.status(400).json({ error: 'All fields are required' });
+    return res.status(400).json({ error: 'Name, email, and message are required.' });
   }
 
-  ContactModel.saveContactMessage(name, email, message, (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to save message' });
-    }
-    res.status(201).json({ message: 'Message saved successfully', id: result.insertId });
-  });
-};
+  try {
+    // Attempt to create a new contact_us
+    await contact_us.create({ name, email, message });
+    res.json({ status: "Signup successful" });
+  } catch (error) {
+    // Handle Mongoose validation errors or other errors
+    console.error('Error during contact_us form:', error);
+    res.status(500).json({ error: 'Internal server error' });
 
-// Handler for retrieving all contact messages
-exports.getAllContactMessages = (req, res) => {
-  ContactModel.getAllContactMessages((err, results) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to retrieve messages' });
-    }
-    res.json(results);
-  });
+  }
+}
+module.exports = {
+  saveContactUsForm,
 };
