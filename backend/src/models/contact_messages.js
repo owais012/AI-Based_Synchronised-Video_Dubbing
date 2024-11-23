@@ -1,30 +1,23 @@
-const db = require('../../config/db'); // Adjust the path to your db configuration
+const mongoose = require("mongoose");
 
-// Function to save a contact message
-const saveContactMessage = (name, email, message, callback) => {
-  const query = `INSERT INTO contact_messages (name, email, message) VALUES (?, ?, ?)`;
-  db.query(query, [name, email, message], (err, result) => {
-    if (err) {
-      console.error('Error saving contact message:', err);
-      return callback(err);
-    }
-    callback(null, result);
-  });
-};
+const contactUsSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    message: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
-// Function to get all contact messages
-const getAllContactMessages = (callback) => {
-  const query = `SELECT * FROM contact_messages ORDER BY created_at DESC`;
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching contact messages:', err);
-      return callback(err);
-    }
-    callback(null, results);
-  });
-};
+const contact_us = mongoose.model("contact_us", contactUsSchema);
 
-module.exports = {
-  saveContactMessage,
-  getAllContactMessages,
-};
+module.exports = contact_us;

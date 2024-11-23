@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const contactController = require('../controllers/contactController');
+const  {saveContactUsForm} = require('../controllers/contactController');
 
 // Route to save a contact message
-router.post('/contact', contactController.saveContactMessage);
+router.post('/contact',   saveContactUsForm);
 
 // Route to retrieve all contact messages
-router.get('/contact', contactController.getAllContactMessages);
+// router.get('/contact', contactController.getAllContactMessages);
 
 module.exports = router;
