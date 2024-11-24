@@ -16,7 +16,7 @@ function Features() {
 
   const handleTryIt = (language) => {
     setSelectedLanguage(language);
-    navigate(`/tryme?language=${encodeURIComponent(language)}`); // Navigate to Try Me page with the selected language
+    navigate(`/tryme?language=${encodeURIComponent(language)}`); 
   };
 
   return (

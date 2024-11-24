@@ -16,7 +16,21 @@ const reviews = [
     rating: 5,
     comment: "Highly recommend! The process was smooth and the results were amazing.",
   },
-  // Add more reviews as needed
+  {
+    name: "Aditi Patel",
+    rating: 3,
+    comment: "Decent results, but the cloned voice quality could use some refinement.",
+  },
+  {
+      name: "Rajesh Nair",
+      rating: 5,
+      comment: "The attention to detail was remarkable. I’m extremely satisfied.",
+  },
+  {
+      name: "Neha Goyal",
+      rating: 4,
+      comment: "Impressive technology! Just need better support for rare dialects.",
+  }
 ];
 
 function Review() {

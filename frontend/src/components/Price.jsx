@@ -11,7 +11,7 @@ function Price() {
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex-1 max-w-xs mx-auto">
             <h2 className="text-2xl font-semibold text-white mb-4">Monthly Plan</h2>
             <div className="bg-white text-black p-4 rounded-lg mb-4">
-              <h3 className="text-3xl font-bold">₹29</h3>
+              <h3 className="text-3xl font-bold">₹500</h3>
               <p className="text-sm">Per Month</p>
             </div>
             <p className="text-gray-300 mb-4">
@@ -23,7 +23,7 @@ function Price() {
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex-1 max-w-xs mx-auto">
             <h2 className="text-2xl font-semibold text-white mb-4">Yearly Plan</h2>
             <div className="bg-white text-black p-4 rounded-lg mb-4">
-              <h3 className="text-3xl font-bold">₹500</h3>
+              <h3 className="text-3xl font-bold">₹3000</h3>
               <p className="text-sm">Per Year</p>
             </div>
             <p className="text-gray-300 mb-4">
@@ -36,7 +36,7 @@ function Price() {
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-xs mx-auto mb-12">
           <h2 className="text-2xl font-semibold text-white mb-4">Cost Per Video</h2>
           <div className="bg-white text-black p-4 rounded-lg">
-            <h3 className="text-3xl font-bold">₹15</h3>
+            <h3 className="text-3xl font-bold">₹50</h3>
             <p className="text-sm">Per Video</p>
           </div>
           <p className="text-gray-300 mt-4">
