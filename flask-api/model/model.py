@@ -154,7 +154,6 @@ def process_video(youtube_url, src_lang, tgt_lang, start, end):
     lipsync(input_video_path, output_audio_path)
 
     # Move final lip-synced video to output directory
-    result_video_path = 'AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/results/result_voice.mp4'
-    # os.rename("AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/results/result_voice.mp4", result_video_path)
-
-    return result_video_path  
+    result_video_path = 'AI-Based_Synchronised-Video_Dubbing/flask-api/model/static/videos/result_voice.mp4'
+    result_video_filename = os.path.basename(result_video_path)
+    return result_video_filename

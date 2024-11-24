@@ -29,9 +29,6 @@ function Hero() {
   };
 
   const handleSubmit = async () => {
-    
-    console.log(url + " " + language);
-
     if (url && language) {
       try {
         const response = await fetch("http://localhost:8000/dub-video", {
@@ -40,42 +37,44 @@ function Hero() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            youtube_url: url,  // Updated parameter name
+            youtube_url: url,
             src_lang: "eng_Latn",
             tgt_lang: language,
-            start: 1,  // New start time
-            end: 9,  
+            start: 1,
+            end: 9,
           }),
         });
-
+  
+        // Log the entire response for debugging
+        console.log("Response:", response);
+  
         if (response.ok) {
-          const blob = await response.blob();
-          const videoUrl = URL.createObjectURL(blob);
-
-          const link = document.createElement("a");
-          link.href = videoUrl;
-          link.download = "dubbed_video.mp4";
-          document.body.appendChild(link);
-          link.click();
-
-          const videoElement = document.getElementById("videoPreview");
-          if (videoElement) {
-            videoElement.src = videoUrl;
+          const data = await response.json();
+  
+          // Log the parsed response data
+          console.log("Response Data:", data);
+  
+          if (data.video_url) {
+            // Open the video link in a new tab
+            window.open("http://192.168.1.9:8000/static/videos/result_voice.mp4", "_blank", "noopener,noreferrer");
+          } else {
+            console.error("No video URL in response:", data);
+            alert("Error: No video URL received from the server.");
           }
-
-          alert("Dubbed video generated successfully!");
         } else {
-          const error = await response.json();
-          alert(`Error: ${error.error}`);
+          const errorData = await response.json();
+          console.error("Server Error Response:", errorData);
+          alert(`Server Error: ${errorData.error || "Unknown error occurred."}`);
         }
       } catch (err) {
-        console.error("Error submitting form:", err);
-        alert("An error occurred. Please try again.");
+        console.error("Fetch Error:", err.message);
+        alert("An error occurred. Please check the console for details.");
       }
     } else {
       alert("Please enter a URL and select a language.");
     }
   };
+  
 
   const handleUrlChange = (e) => {
     const videoUrl = e.target.value;
@@ -151,7 +150,20 @@ function Hero() {
                 <option value="Kannada">Kannada</option>
               </select>
             </div>
-
+            <div className="flex gap-4 w-full">
+              <input
+                className="w-1/2 p-4 text-lg rounded-2xl text-black"
+                placeholder="Start Time (seconds)"
+                type="number"
+                onChange={(e) => setStart(parseFloat(e.target.value))}
+              />
+              <input
+                className="w-1/2 p-4 text-lg rounded-2xl text-black"
+                placeholder="End Time (seconds)"
+                type="number"
+                onChange={(e) => setEnd(parseFloat(e.target.value))}
+              />
+          </div>
             {error && <p className="text-red-500 text-center">{error}</p>}
 
             <div className="w-full mt-6 p-4 border-2 border-gray-700 rounded-2xl">

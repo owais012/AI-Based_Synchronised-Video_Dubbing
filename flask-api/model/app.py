@@ -1,10 +1,18 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory, url_for
 from model import process_video
+import os
 import traceback
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app, resources={r"/": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/dub-video": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/static/*": {"origins": "http://localhost:5173"}})
+
+# Define the static folder path
+STATIC_FOLDER = "AI-Based_Synchronised-Video_Dubbing/flask-api/model/static"
+VIDEOS_FOLDER = os.path.join(STATIC_FOLDER, "videos")
+os.makedirs(VIDEOS_FOLDER, exist_ok=True)  # Ensure the videos folder exists
 
 @app.route('/dub-video', methods=['OPTIONS'])
 def options():
@@ -13,7 +21,6 @@ def options():
     response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     return response
-
 
 @app.route('/dub-video', methods=['POST'])
 def dub_video():
@@ -34,14 +41,22 @@ def dub_video():
             return jsonify({"error": "Invalid 'start' or 'end' time. Ensure they are numbers and 'start' < 'end'."}), 400
 
         # Process video
-        output_file = process_video(youtube_url, src_lang, tgt_lang, start=start, end=end)
-        return jsonify({"message": "Translation and dubbing complete.", "output_file": output_file})
+        output_filename = process_video(youtube_url, src_lang, tgt_lang, start=start, end=end)
+        output_filepath = os.path.join(VIDEOS_FOLDER, output_filename)
+
+        # Save the processed video file to the static/videos folder
+        if not os.path.exists(output_filepath):
+            return jsonify({"error": f"File not found: {output_filepath}"}), 500
+
+        # Generate the public URL for the video usin    g Flask's default static file serving
+        video_url = url_for('static', filename='videos/' + output_filename, _external=True)
+        print(video_url)
+        return jsonify({"message": "Translation and dubbing complete.", "video_url": video_url})
 
     except Exception as e:
         error_message = traceback.format_exc()  # Capture full traceback
         print(error_message)  # Log traceback for debugging
         return jsonify({"error": str(e), "details": error_message}), 500
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
