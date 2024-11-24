@@ -22,15 +22,29 @@ for path in [INPUT_AUDIO_PATH, INPUT_VIDEO_PATH, OUTPUT_AUDIO_PATH, OUTPUT_VIDEO
     if not os.path.exists(path):
         os.makedirs(path)
 
+# Language Code Mapping
+LANGUAGE_CODE_MAPPING = {
+    "en_Latn": "en",  # English
+    "hin_Deva": "hi",  # Hindi
+    "guj_Gujr": "gu",  # Gujarati
+    "kan_Knda": "kn"
+}
+
+# Language Code Mapping
+INDIC_LANGUAGE_CODE_MAPPING = {
+    "en": "en_Latn",  # English
+    "hi": "hin_Deva",  # Hindi
+    "gu": "guj_Gujr",  # Gujarati
+    "kn": "kan_Knda"
+}
 
 def download_youtube_audio(youtube_url):
-    audio_filename = "audio"  # Constant filename
+    audio_filename = "audio.wav"  # Constant filename
     input_audio_path = os.path.join(INPUT_AUDIO_PATH, audio_filename)
-    print(input_audio_path, "hellooooo")
 
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': input_audio_path,  # Save in the input_audio folder
+        'outtmpl': input_audio_path,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'wav',
@@ -41,22 +55,13 @@ def download_youtube_audio(youtube_url):
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([youtube_url])
-    print(input_audio_path, "hellooooo")
 
-    audio_filename = "audio.wav"  # Constant filename
-    input_audio_path = os.path.join(INPUT_AUDIO_PATH, audio_filename)
-    print(input_audio_path, "hellooooo")
-
-    return input_audio_path  # Return the full path to the file
-
-
-
+    return input_audio_path
 
 def get_asr_output(audio_file):
     whisper = pipeline("automatic-speech-recognition", model="openai/whisper-medium", device=DEVICE)
     asr_output = whisper(audio_file, return_timestamps=True)
     return asr_output['text']
-
 
 def initialize_model_and_tokenizer(ckpt_dir, quantization):
     if quantization == "4-bit":
@@ -78,7 +83,6 @@ def initialize_model_and_tokenizer(ckpt_dir, quantization):
 
     model.eval()
     return tokenizer, model
-
 
 def batch_translate(input_sentences, src_lang, tgt_lang, model, tokenizer, ip):
     translations = []
@@ -104,6 +108,20 @@ def batch_translate(input_sentences, src_lang, tgt_lang, model, tokenizer, ip):
 
     return translations
 
+def generate_audio_with_gtts(translations, language, output_directory):
+    language = LANGUAGE_CODE_MAPPING.get(language, language)
+    print(language)
+    text_to_speak = ' '.join(translations)
+    tts = gTTS(text=text_to_speak, lang=language)
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    audio_filename = f"audio_translated_{language}.mp3"
+    output_audio_path = os.path.join(output_directory, audio_filename)
+    tts.save(output_audio_path)
+
+    return output_audio_path
 
 def lipsync(input_video_path, input_audio_path):
     if not os.path.isfile('AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/checkpoints/wav2lip_gan.pth'):
@@ -112,48 +130,38 @@ def lipsync(input_video_path, input_audio_path):
         f'python AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/inference.py --checkpoint_path "AI-Based_Synchronised-Video_Dubbing/flask-api/model/Wav2Lip/checkpoints/wav2lip_gan.pth" '
         f'--face "{input_video_path}" --audio "{input_audio_path}" --nosmooth --resize_factor 1'
     )
-    
 
 def download_and_trim_video(youtube_url, start, end):
     trimmed_video_filename = "video.mp4"  # Constant filename
     output_video_path = os.path.join(INPUT_VIDEO_PATH, trimmed_video_filename)
 
-    # Download video
     os.system(f'yt-dlp -f "bestvideo[ext=mp4]" --output "youtube.mp4" {youtube_url}')
-
-    # Trim the video
     interval = end - start
     os.system(f'ffmpeg -y -i youtube.mp4 -ss {start} -t {interval} -async 1 {output_video_path}')
 
     return output_video_path
 
-
 def process_video(youtube_url, src_lang, tgt_lang, start, end):
-    # Download and trim video
     input_audio_path = download_youtube_audio(youtube_url)
-    
-
     input_video_path = download_and_trim_video(youtube_url, start, end)
 
-    # Get ASR output
     asr_text = get_asr_output(input_audio_path)
 
-    # Translate ASR output
     en_indic_ckpt_dir = "ai4bharat/indictrans2-en-indic-1B"
     en_indic_tokenizer, en_indic_model = initialize_model_and_tokenizer(en_indic_ckpt_dir, quantization)
     ip = IndicProcessor(inference=True)
-    translations = batch_translate([asr_text], src_lang, tgt_lang, en_indic_model, en_indic_tokenizer, ip)
 
-    # Generate translated audio
-    translated_audio_filename = f"audio_translated.mp3"
-    output_audio_path = os.path.join(OUTPUT_AUDIO_PATH, translated_audio_filename)
-    tts = gTTS(' '.join(translations), lang='hi')  # Change `lang` for other target languages
-    tts.save(output_audio_path)
-    print(input_video_path, output_audio_path)
-    # Perform lip-sync with translated audio
+    # Get the IndicTrans language codes dynamically
+    src_lang_indic = INDIC_LANGUAGE_CODE_MAPPING.get(src_lang, src_lang)
+    tgt_lang_indic = INDIC_LANGUAGE_CODE_MAPPING.get(tgt_lang, tgt_lang)
+    
+    translations = batch_translate([asr_text], src_lang_indic, tgt_lang_indic, en_indic_model, en_indic_tokenizer, ip)
+
+    tgt_lang_gtts = LANGUAGE_CODE_MAPPING.get(tgt_lang, tgt_lang)
+    output_audio_path = generate_audio_with_gtts(translations, tgt_lang_gtts, OUTPUT_AUDIO_PATH)
+
     lipsync(input_video_path, output_audio_path)
 
-    # Move final lip-synced video to output directory
     result_video_path = 'AI-Based_Synchronised-Video_Dubbing/flask-api/model/static/videos/result_voice.mp4'
     result_video_filename = os.path.basename(result_video_path)
     return result_video_filename
