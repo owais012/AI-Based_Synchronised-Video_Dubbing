@@ -2,17 +2,17 @@ import React from "react";
 
 const reviews = [
   {
-    name: "John Doe",
+    name: "Priya Rane",
     rating: 5,
     comment: "Fantastic service! The dubbing quality is top-notch.",
   },
   {
-    name: "Jane Smith",
+    name: "Shaurya shetty",
     rating: 4,
     comment: "Great experience, but there is room for improvement.",
   },
   {
-    name: "Sam Wilson",
+    name: "Kavita Rai",
     rating: 5,
     comment: "Highly recommend! The process was smooth and the results were amazing.",
   },
