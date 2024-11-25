@@ -39,9 +39,9 @@ INDIC_LANGUAGE_CODE_MAPPING = {
 }
 
 def download_youtube_audio(youtube_url):
-    audio_filename = "audio.wav"  # Constant filename
+    audio_filename = "audio"  # Constant filename
     input_audio_path = os.path.join(INPUT_AUDIO_PATH, audio_filename)
-
+    print(audio_filename)
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': input_audio_path,
@@ -55,7 +55,10 @@ def download_youtube_audio(youtube_url):
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([youtube_url])
-
+    print(audio_filename)
+    audio_filename = "audio.wav"
+    input_audio_path = os.path.join(INPUT_AUDIO_PATH, audio_filename)
+    print(audio_filename)
     return input_audio_path
 
 def get_asr_output(audio_file):
@@ -110,6 +113,8 @@ def batch_translate(input_sentences, src_lang, tgt_lang, model, tokenizer, ip):
 
 def generate_audio_with_gtts(translations, language, output_directory):
     language = LANGUAGE_CODE_MAPPING.get(language, language)
+    if language == 'eng_Latn':
+        language = 'en'
     print(language)
     text_to_speak = ' '.join(translations)
     tts = gTTS(text=text_to_speak, lang=language)
@@ -154,9 +159,9 @@ def process_video(youtube_url, src_lang, tgt_lang, start, end):
     # Get the IndicTrans language codes dynamically
     src_lang_indic = INDIC_LANGUAGE_CODE_MAPPING.get(src_lang, src_lang)
     tgt_lang_indic = INDIC_LANGUAGE_CODE_MAPPING.get(tgt_lang, tgt_lang)
-    
+    print(asr_text)
     translations = batch_translate([asr_text], src_lang_indic, tgt_lang_indic, en_indic_model, en_indic_tokenizer, ip)
-
+    print(translations)
     tgt_lang_gtts = LANGUAGE_CODE_MAPPING.get(tgt_lang, tgt_lang)
     output_audio_path = generate_audio_with_gtts(translations, tgt_lang_gtts, OUTPUT_AUDIO_PATH)
 

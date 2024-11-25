@@ -15,7 +15,7 @@ function Hero() {
 
   // Language mapping object
   const languageMap = {
-    English: "eng_Latn",
+    // English: "eng_Latn",
     Hindi: "hin_Deva",
     Gujarati: "guj_Gujr",
     Kannada: "kan_Knda"
@@ -71,9 +71,8 @@ function Hero() {
       if (response.ok) {
         const data = await response.json();
         console.log("Response Data:", data);
-
         if (data.video_url) {
-          window.open("http://192.168.1.9:8000/static/videos/result_voice.mp4", "_blank", "noopener,noreferrer");
+          window.open("http://localhost:8000/static/videos/result_voice.mp4", "_blank", "noopener,noreferrer");
         } else {
           console.error("No video URL in response:", data);
           setError("Error: No video URL received from the server.");

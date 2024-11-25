@@ -42,7 +42,7 @@ def dub_video():
             return jsonify({"error": "Invalid 'start' or 'end' time. Ensure they are numbers and 'start' < 'end'."}), 400
 
         # Process video
-        output_filename = process_video(youtube_url, src_lang, tgt_lang, start=start, end=end)
+        output_filename = process_video(youtube_url, src_lang, tgt_lang, start=start, end=end) 
         output_filepath = os.path.join(VIDEOS_FOLDER, output_filename)
 
         # Save the processed video file to the static/videos folder
@@ -61,3 +61,4 @@ def dub_video():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
+    
